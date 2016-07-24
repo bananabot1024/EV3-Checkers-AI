@@ -1,5 +1,5 @@
-# EV3-Checkers-AI
-COSMOS C5 Robotics Final Project (EV3 robot that uses algorithms to play checkers)
+# EV3-Connect4-AI
+COSMOS C5 Robotics Final Project (EV3 robot that uses algorithms to play connect 4)
 
 Goal 1: Random movement + Basic strategies
 
