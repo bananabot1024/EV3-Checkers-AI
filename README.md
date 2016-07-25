@@ -7,4 +7,4 @@ Goal 2: Random movement + More advanced strategies
 
 Goal 3: Minimax with alpha-beta pruning
 
-Goal 4: Machine learning 
+Goal 4: Machine learning with Q-learning
