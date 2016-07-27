@@ -13,7 +13,9 @@
 void nextTurnSound()
 {
 	// beep
-	playTone(100,500);
+	playTone(100,30);
+	while(bSoundActive)
+		sleep(1);
 }
 
 void rotateArm()
@@ -89,8 +91,9 @@ void determineNextMove()
 
 task main()
 {
-	setMotorSync(leftMotor, rightMotor);
-
+	setMotorSync(leftMotor, rightMotor, 0, 80);
+	// tests
+	nextTurnSound();
 	rotateArm();
 
 }
