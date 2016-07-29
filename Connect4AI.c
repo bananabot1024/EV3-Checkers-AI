@@ -1,10 +1,10 @@
-#pragma config(Sensor, S3,     colorSensor,    sensorEV3_Color)
-#pragma config(Motor,  motorA,          verticalMotor, tmotorEV3_Large, PIDControl, encoder)
-#pragma config(Motor,  motorB,          leftMotor,     tmotorEV3_Large, PIDControl, encoder)
-#pragma config(Motor,  motorC,          rightMotor,    tmotorEV3_Large, PIDControl, encoder)
-#pragma config(Motor,  motorD,          armMotor,      tmotorEV3_Large, PIDControl, encoder)
+#pragma config(Sensor, S3,     colorSensor,   sensorEV3_Color)
+#pragma config(Motor,  motorA, verticalMotor, tmotorEV3_Large, PIDControl, encoder)
+#pragma config(Motor,  motorB, leftMotor,     tmotorEV3_Large, PIDControl, encoder)
+#pragma config(Motor,  motorC, rightMotor,    tmotorEV3_Large, PIDControl, encoder)
+#pragma config(Motor,  motorD, armMotor,      tmotorEV3_Large, PIDControl, encoder)
 
-// change this depending on sensor read values
+// computer is red, player is yellow
 // red 50, yellow 72
 #define redMin 43
 #define redMax 57
@@ -12,9 +12,9 @@
 #define yellowMax 80
 
 // define global array variable to store the state of the board
-// 7 across, 6 down
+// 6 down across (6 rows), 7 across (7 columns)
 // 0 for empty, 1 for opponent, 2 for robot
-int board[7][6];
+int board[6][7];
 
 void nextTurnSound()
 {
@@ -66,16 +66,20 @@ void playEndSound(bool winnerUser)
 	if (winnerUser)
 	{
 		// play winning sound
+		playSoundFile("/home/root/lms2012/prjs/rc/win2");
+		sleep(2000);
 	}
 	else
 	{
 		// play losing sound
+		playSoundFile("/home/root/lms2012/prjs/rc/lose")
+		sleep(4000);
 	}
-	// exit program here (or, if not possible, break out of all loops in main)
 }
 
-void checkWiner()
+bool checkWiner()
 {
+	bool winner = false;
 	bool opponentWon = true, robotWon = true;
 	// check horizontal
 	for (int row = 0; row <= 5; row++)
@@ -100,10 +104,12 @@ void checkWiner()
 	if (robotWon)
 	{
 		playEndSOund(false);
+		winner = true;
 	}
 	else if (opponentWon)
 	{
 		playEndSound(true);
+		winner = true;
 	}
 
 	// check vertical
@@ -129,10 +135,12 @@ void checkWiner()
 	if (robotWon)
 	{
 		playEndSOund(false);
+		winner = true;
 	}
 	else if (opponentWon)
 	{
 		playEndSound(true);
+		winner = true;
 	}
 
 	// check top left to bottom right diagonal
@@ -158,10 +166,12 @@ void checkWiner()
 	if (robotWon)
 	{
 		playEndSOund(false);
+		winner = true;
 	}
 	else if (opponentWon)
 	{
 		playEndSound(true);
+		winner = true;
 	}
 
 	// check bottom left to top right diagonal
@@ -186,22 +196,40 @@ void checkWiner()
 	}
 	if (robotWon)
 	{
-		playEndSOund(false);
+		playEndSound(false);
+		winner = true;
 	}
 	else if (opponentWon)
 	{
 		playEndSound(true);
+		winner = true;
 	}
+	return winner;
 }
 
-void determinePieceLocation()
+void findPlayerPiece()
 {
+	// loop through each bottom empty piece (possible locations of user move)
+	for (int column = 6; column >= 0; column--)
+	{
+		for (int row = 5; row >= 0; row--)
+		{
+			if (board[row][column] == 0)
+			{
+				// move there
 
-}
-
-void sensePlayerPiece()
-{
-
+				// check if piece there
+				if (getColorReflected(S3) > yellowMin && getColorReflected(S3) < yellowMax)
+				{
+					board[row][column] = 1;
+				}
+				else
+				{
+					break;
+				}
+			}
+		}
+	}
 }
 
 void determineNextMove()
@@ -213,5 +241,24 @@ task main()
 {
 	// sync the two drive train motors because the robot only moves straight
 	setMotorSync(leftMotor, rightMotor, 0, 80);
-
+	// let the user know it's their turn
+	nextTurnSound();
+	while (true)
+	{
+		// sense and grab computer piece once user is done
+		senseComputerPiece();
+		// find where the opponent put their piece
+		sensePlayerPiece();
+		// if winner, play sound and end program
+		if (checkWinner())
+		{
+			break;
+		}
+		// use algorithm to determine next computer move
+		determineNextMove();
+		// return home
+		moveToLocation(0, 0);
+		// let the user know it's their turn
+		nextTurnSound();
+	}
 }
