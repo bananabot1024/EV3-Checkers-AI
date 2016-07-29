@@ -103,6 +103,7 @@ void checkWiner()
 	{
 		playEndSound(true);
 	}
+
 	// check vertical
 	for (int col = 0; col <= 6; col++)
 	{
@@ -111,21 +112,81 @@ void checkWiner()
 			opponentWon = true, robotWon = true;
 			for (int i = 0; i < 4; i++)
 			{
-				if (board[row][colStart + i] != 1)
+				if (board[row + i][colStart] != 1)
 				{
 					opponentWon = false;
 				}
-				if (board[row][colStart + i] != 2)
+				if (board[row + i][colStart] != 2)
 				{
 					robotWon = false;
 				}
 			}
 		}
 	}
-	// check top left to bottom right diagonal
+	if (robotWon)
+	{
+		playEndSOund(false);
+	}
+	else if (opponentWon)
+	{
+		playEndSound(true);
+	}
 
+	// check top left to bottom right diagonal
+	for (int topLeftColumn = 0; topLeftColumn <= 3; topLeftColumn++)
+	{
+		for (int topLeftRow = 0; topLeftRow <= 2; topLeftRow++)
+		{
+			opponentWon = true, robotWon = true;
+			for (int i = 0; i < 4; i++)
+			{
+				if (board[row + i][colStart + i] != 1)
+				{
+					opponentWon = false;
+				}
+				if (board[row + i][colStart + i] != 2)
+				{
+					robotWon = false;
+				}
+			}
+		}
+	}
+	if (robotWon)
+	{
+		playEndSOund(false);
+	}
+	else if (opponentWon)
+	{
+		playEndSound(true);
+	}
 
 	// check bottom left to top right diagonal
+	for (int bottomLeftColumn = 0; bottomLeftColumn <= 3; bottomLeftColumn++)
+	{
+		for (int bottomLeftRow = 3; bottomLeftRow <= 5; bottomLeftRow++)
+		{
+			opponentWon = true, robotWon = true;
+			for (int i = 0; i < 4; i++)
+			{
+				if (board[row - i][colStart + i] != 1)
+				{
+					opponentWon = false;
+				}
+				if (board[row - i][colStart + i] != 2)
+				{
+					robotWon = false;
+				}
+			}
+		}
+	}
+	if (robotWon)
+	{
+		playEndSOund(false);
+	}
+	else if (opponentWon)
+	{
+		playEndSound(true);
+	}
 }
 
 void determinePieceLocation()
