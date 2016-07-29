@@ -5,10 +5,11 @@
 #pragma config(Motor,  motorD,          armMotor,      tmotorEV3_Large, PIDControl, encoder)
 
 // change this depending on sensor read values
-#define redMin 20
-#define redMax 30
-#define yellowMin 40
-#define yellowMax 50
+// red 50, yellow 72
+#define redMin 43
+#define redMax 57
+#define yellowMin 65
+#define yellowMax 80
 
 // define global array variable to store the state of the board
 // 7 across, 6 down
@@ -81,7 +82,8 @@ void checkWiner()
 	{
 		for (int colStart = 0; colStart <= 3; colStart++)
 		{
-			opponentWon = true, robotWon = true;
+			opponentWon = true;
+			robotWon = true;
 			for (int i = 0; i < 4; i++)
 			{
 				if (board[row][colStart + i] != 1)
@@ -109,14 +111,15 @@ void checkWiner()
 	{
 		for (int rowStart = 0; rowStart <= 2; rowStart++)
 		{
-			opponentWon = true, robotWon = true;
+			opponentWon = true;
+			robotWon = true;
 			for (int i = 0; i < 4; i++)
 			{
-				if (board[row + i][colStart] != 1)
+				if (board[rowStart + i][col] != 1)
 				{
 					opponentWon = false;
 				}
-				if (board[row + i][colStart] != 2)
+				if (board[rowStart + i][col] != 2)
 				{
 					robotWon = false;
 				}
@@ -137,14 +140,15 @@ void checkWiner()
 	{
 		for (int topLeftRow = 0; topLeftRow <= 2; topLeftRow++)
 		{
-			opponentWon = true, robotWon = true;
+			opponentWon = true;
+			robotWon = true;
 			for (int i = 0; i < 4; i++)
 			{
-				if (board[row + i][colStart + i] != 1)
+				if (board[topLeftRow + i][topLeftColumn + i] != 1)
 				{
 					opponentWon = false;
 				}
-				if (board[row + i][colStart + i] != 2)
+				if (board[topLeftRow + i][topLeftColumn + i] != 2)
 				{
 					robotWon = false;
 				}
@@ -165,14 +169,15 @@ void checkWiner()
 	{
 		for (int bottomLeftRow = 3; bottomLeftRow <= 5; bottomLeftRow++)
 		{
-			opponentWon = true, robotWon = true;
+			opponentWon = true;
+			robotWon = true;
 			for (int i = 0; i < 4; i++)
 			{
-				if (board[row - i][colStart + i] != 1)
+				if (board[bottomLeftRow - i][bottomLeftColumn + i] != 1)
 				{
 					opponentWon = false;
 				}
-				if (board[row - i][colStart + i] != 2)
+				if (board[bottomLeftRow - i][bottomLeftColumn + i] != 2)
 				{
 					robotWon = false;
 				}
