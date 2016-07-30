@@ -1,5 +1,3 @@
-// This program is to test separate functions
-
 #pragma config(Sensor, S3,     colorSensor,   sensorEV3_Color)
 #pragma config(Motor,  motorA, verticalMotor, tmotorEV3_Large, PIDControl, encoder)
 #pragma config(Motor,  motorB, leftMotor,     tmotorEV3_Large, PIDControl, encoder)
@@ -74,12 +72,12 @@ void playEndSound(bool winnerUser)
 	else
 	{
 		// play losing sound
-		playSoundFile("/home/root/lms2012/prjs/rc/lose")
+		playSoundFile("/home/root/lms2012/prjs/rc/lose");
 		sleep(4000);
 	}
 }
 
-bool checkWiner()
+bool checkWinner()
 {
 	bool winner = false;
 	bool opponentWon = true, robotWon = true;
@@ -105,7 +103,7 @@ bool checkWiner()
 	}
 	if (robotWon)
 	{
-		playEndSOund(false);
+		playEndSound(false);
 		winner = true;
 	}
 	else if (opponentWon)
@@ -136,7 +134,7 @@ bool checkWiner()
 	}
 	if (robotWon)
 	{
-		playEndSOund(false);
+		playEndSound(false);
 		winner = true;
 	}
 	else if (opponentWon)
@@ -167,7 +165,7 @@ bool checkWiner()
 	}
 	if (robotWon)
 	{
-		playEndSOund(false);
+		playEndSound(false);
 		winner = true;
 	}
 	else if (opponentWon)
@@ -236,10 +234,11 @@ void findPlayerPiece()
 
 void determineNextMove()
 {
+	// algorithm implements minimax with alpha-beta pruning
 
 }
 
 task main()
 {
-	rotateArm();
+
 }

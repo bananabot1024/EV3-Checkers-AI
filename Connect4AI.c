@@ -72,12 +72,12 @@ void playEndSound(bool winnerUser)
 	else
 	{
 		// play losing sound
-		playSoundFile("/home/root/lms2012/prjs/rc/lose")
+		playSoundFile("/home/root/lms2012/prjs/rc/lose");
 		sleep(4000);
 	}
 }
 
-bool checkWiner()
+bool checkWinner()
 {
 	bool winner = false;
 	bool opponentWon = true, robotWon = true;
@@ -103,7 +103,7 @@ bool checkWiner()
 	}
 	if (robotWon)
 	{
-		playEndSOund(false);
+		playEndSound(false);
 		winner = true;
 	}
 	else if (opponentWon)
@@ -134,7 +134,7 @@ bool checkWiner()
 	}
 	if (robotWon)
 	{
-		playEndSOund(false);
+		playEndSound(false);
 		winner = true;
 	}
 	else if (opponentWon)
@@ -165,7 +165,7 @@ bool checkWiner()
 	}
 	if (robotWon)
 	{
-		playEndSOund(false);
+		playEndSound(false);
 		winner = true;
 	}
 	else if (opponentWon)
@@ -234,6 +234,7 @@ void findPlayerPiece()
 
 void determineNextMove()
 {
+	// algorithm implements minimax with alpha-beta pruning
 
 }
 
@@ -248,7 +249,7 @@ task main()
 		// sense and grab computer piece once user is done
 		senseComputerPiece();
 		// find where the opponent put their piece
-		sensePlayerPiece();
+		findPlayerPiece();
 		// if winner, play sound and end program
 		if (checkWinner())
 		{
