@@ -4,6 +4,11 @@
 #pragma config(Motor,  motorC, rightMotor,    tmotorEV3_Large, PIDControl, encoder)
 #pragma config(Motor,  motorD, armMotor,      tmotorEV3_Large, PIDControl, encoder)
 
+// define global array variable to store the state of the board
+// 6 rows, 7 columns
+// 0 for empty, 1 for opponent, 2 for robot
+int board[6][7];
+
 // computer is red, player is yellow
 // red 50, yellow 72
 #define redMin 43
@@ -14,11 +19,6 @@
 // define array(s) to store the encoder values of certain positions
 // including arm fling, color sense (horizontal) needed locations and vertical
 // TODO
-
-// define global array variable to store the state of the board
-// 6 down across (6 rows), 7 across (7 columns)
-// 0 for empty, 1 for opponent, 2 for robot
-int board[6][7];
 
 void nextTurnSound()
 {
@@ -120,11 +120,11 @@ int checkWinner()
 	{
 		for (int topLeftRow = 0; topLeftRow <= 2; topLeftRow++)
 		{
-			if (board[topLeftRow][topLeftColumn] == 1 && board[topLeftRow + 1][topLeftColumn + 1] == 1 && board[topLeftRow + 2][topLeftColumn + 2] == 1 board[topLeftRow + 3][topLeftColumn + 3] == 1)
+			if (board[topLeftRow][topLeftColumn] == 1 && board[topLeftRow + 1][topLeftColumn + 1] == 1 && board[topLeftRow + 2][topLeftColumn + 2] == 1 && board[topLeftRow + 3][topLeftColumn + 3] == 1)
 			{
 				return 1;
 			}
-			if (board[topLeftRow][topLeftColumn] == 2 && board[topLeftRow + 1][topLeftColumn + 1] == 2 && board[topLeftRow + 2][topLeftColumn + 2] == 2 board[topLeftRow + 3][topLeftColumn + 3] == 2)
+			if (board[topLeftRow][topLeftColumn] == 2 && board[topLeftRow + 1][topLeftColumn + 1] == 2 && board[topLeftRow + 2][topLeftColumn + 2] == 2 && board[topLeftRow + 3][topLeftColumn + 3] == 2)
 			{
 				return 2;
 			}
@@ -132,15 +132,15 @@ int checkWinner()
 	}
 
 	// check bottom left to top right diagonal
-	for (int bottomLeftColumn = 0; bottomLeftColumn <= 3; bottomLeftColumn++)
+	for (int c = 0; c <= 3; c++)
 	{
-		for (int bottomLeftRow = 3; bottomLeftRow <= 5; bottomLeftRow++)
+		for (int r = 0; r <= 2; r++)
 		{
-			if (board[topLeftRow][topLeftColumn] == 1 && board[topLeftRow - 1][topLeftColumn + 1] == 1 && board[topLeftRow - 2][topLeftColumn + 2] == 1 board[topLeftRow - 3][topLeftColumn + 3] == 1)
+			if (board[r][c] == 1 && board[r + 1][c + 1] == 1 && board[r + 2][c + 2] == 1 && board[r + 3][c + 3] == 1)
 			{
 				return 1;
 			}
-			if (board[topLeftRow][topLeftColumn] == 2 && board[topLeftRow - 1][topLeftColumn + 1] == 2 && board[topLeftRow - 2][topLeftColumn + 2] == 2 board[topLeftRow - 3][topLeftColumn + 3] == 2)
+			if (board[r][c] == 2 && board[r + 1][c + 1] == 2 && board[r + 2][c + 2] == 2 && board[r + 3][c + 3] == 2)
 			{
 				return 2;
 			}
@@ -176,22 +176,28 @@ void findPlayerPiece()
 }
 
 // turn: 1 = computer, -1 = opponent
-int minimax(int depth, int boardCopy[6][7], int turn)
+int minimax(int depth, int turn)
 {
-	if (depth == 0
+	if (depth == 0)
+	{
+
+	}
 	// final game state: rank according to win, draw, loss
 	// intermediate game states:
 	// if computer move: game state = max rank of available moves
 	// if opponent move: game state = min rank of available moves
 	// TODO
+	int column = 0;
+	return column;
 }
 
 // algorithm implements minimax with alpha-beta pruning
 void computerMove()
 {
-	column = minimax();
+	// int column = minimax();
 	// TODO
-
+	// move to location
+	// fling arm
 }
 
 task main()
@@ -213,7 +219,7 @@ task main()
 			playEndSound(winner);
 			break;
 		}
-		// computer determines best move and executes it
+		// computer determines best move
 		computerMove();
 		// return home
 		moveToLocation(0, 0);
