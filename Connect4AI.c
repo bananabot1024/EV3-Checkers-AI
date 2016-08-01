@@ -11,8 +11,9 @@
 #define yellowMin 65
 #define yellowMax 80
 
-// define arrays to store the encoder values of certain positions
+// define array(s) to store the encoder values of certain positions
 // including arm fling, color sense (horizontal) needed locations and vertical
+// TODO
 
 // define global array variable to store the state of the board
 // 6 down across (6 rows), 7 across (7 columns)
@@ -158,7 +159,7 @@ void findPlayerPiece()
 			if (board[row][column] == 0)
 			{
 				// move there
-
+				// TODO
 
 				// check if piece there
 				if (getColorReflected(S3) > yellowMin && getColorReflected(S3) < yellowMax)
@@ -182,12 +183,14 @@ int minimax(int depth, int boardCopy[6][7], int turn)
 	// intermediate game states:
 	// if computer move: game state = max rank of available moves
 	// if opponent move: game state = min rank of available moves
+	// TODO
 }
 
 // algorithm implements minimax with alpha-beta pruning
 void computerMove()
 {
 	column = minimax();
+	// TODO
 
 }
 
