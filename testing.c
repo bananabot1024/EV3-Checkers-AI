@@ -6,80 +6,25 @@
 
 // define global array variable to store the state of the board
 // 6 rows, 7 columns
-// 0 for empty, 1 for opponent, 2 for robot
-int board[6][7];
+// values: 0 for empty, 1 for player, 2 for computer
+int board[6][7] = {{0,0,1,1,1,1,0},
+					 				{2,0,1,2,2,2,0},
+					 				{0,0,0,0,0,0,0},
+					 				{0,0,0,0,0,0,0},
+									{0,0,0,0,0,0,0},
+									{0,0,0,0,0,0,0}};
 
-// computer is red, player is yellow
-// red 50, yellow 72
-#define redMin 43
-#define redMax 57
-#define yellowMin 65
-#define yellowMax 80
+// we don't need to differentiate between red or yellow
+// there will only be one new opponent piece every turn
+#define colorMin 20
 
-// define array(s) to store the encoder values of certain positions
-// including arm fling, color sense (horizontal) needed locations and vertical
-// TODO
+int numRobotMoves = 0;
 
-void nextTurnSound()
-{
-	// beep
-	playTone(100,30);
-	while(bSoundActive)
-		sleep(1);
-}
-
-void rotateArm()
-{
-	// rotate arm downwards to pick up piece
-	setMotorTarget(armMotor, 50, 50);
-	waitUntilMotorStop(armMotor);
-	delay(200);
-	setMotorTarget(armMotor, 120, 100);
-	waitUntilMotorStop(armMotor);
-	delay(200);
-	// rotate arm back up to position 0
-	setMotorTarget(armMotor, 0, 10);
-	waitUntilMotorStop(armMotor);
-}
-
-void senseComputerPiece()
-{
-	while (true)
-	{
-		// if red sensed
-	  if (getColorReflected(S3) >= redMin && getColorReflected(S3) <= redMax)
-		{
-			rotateArm();
-		}
-		break;
-	}
-}
-
-void moveToLocation(int h, int v)
-{
-	// move horizontally
-	setMotorTarget(leftMotor, h, 70);
-	waitUntilMotorStop(leftMotor);
-	// move vertically
-	setMotorTarget(verticalMotor, v, 70);
-	waitUntilMotorStop(verticalMotor);
-}
-
-void playEndSound(int winner)
-{
-	if (winner == 1)
-	{
-		// play winning sound
-		playSoundFile("/home/root/lms2012/prjs/rc/win2");
-		sleep(2000);
-	}
-	else
-	{
-		// play losing sound
-		playSoundFile("/home/root/lms2012/prjs/rc/lose");
-		sleep(4000);
-	}
-}
+// define data structures to store the encoder values of certain positions
+#define sensorHorizontal [250, 356, 460, 560, 662, 765, 867]
+#define armHorizontal [356, 460, 560, 662, 765, 867, 970]
+// #define sensorVertical[6]
+// #define armTop
 
 int checkWinner()
 {
@@ -134,13 +79,13 @@ int checkWinner()
 	// check bottom left to top right diagonal
 	for (int c = 0; c <= 3; c++)
 	{
-		for (int r = 0; r <= 2; r++)
+		for (int r = 5; r >= 3; r--)
 		{
-			if (board[r][c] == 1 && board[r + 1][c + 1] == 1 && board[r + 2][c + 2] == 1 && board[r + 3][c + 3] == 1)
+			if (board[r][c] == 1 && board[r - 1][c + 1] == 1 && board[r - 2][c + 2] == 1 && board[r - 3][c + 3] == 1)
 			{
 				return 1;
 			}
-			if (board[r][c] == 2 && board[r + 1][c + 1] == 2 && board[r + 2][c + 2] == 2 && board[r + 3][c + 3] == 2)
+			if (board[r][c] == 2 && board[r - 1][c + 1] == 2 && board[r - 2][c + 2] == 2 && board[r - 3][c + 3] == 2)
 			{
 				return 2;
 			}
@@ -149,81 +94,8 @@ int checkWinner()
 	return 0;
 }
 
-void findPlayerPiece()
-{
-	// loop through each bottom empty piece (possible locations of user move)
-	for (int column = 6; column >= 0; column--)
-	{
-		for (int row = 5; row >= 0; row--)
-		{
-			if (board[row][column] == 0)
-			{
-				// move there
-				// TODO
-
-				// check if piece there
-				if (getColorReflected(S3) > yellowMin && getColorReflected(S3) < yellowMax)
-				{
-					board[row][column] = 1;
-				}
-				else
-				{
-					break;
-				}
-			}
-		}
-	}
-}
-
-// turn: 1 = computer, -1 = opponent
-int minimax(int depth, int turn)
-{
-	if (depth == 0)
-	{
-
-	}
-	// final game state: rank according to win, draw, loss
-	// intermediate game states:
-	// if computer move: game state = max rank of available moves
-	// if opponent move: game state = min rank of available moves
-	// TODO
-	int column = 0;
-	return column;
-}
-
-// algorithm implements minimax with alpha-beta pruning
-void computerMove()
-{
-	// int column = minimax();
-	// TODO
-	// move to location
-	// fling arm
-}
 
 task main()
 {
-	// sync the two drive train motors because the robot only moves straight
-	setMotorSync(leftMotor, rightMotor, 0, 80);
-	// let the user know it's their turn
-	nextTurnSound();
-	while (true)
-	{
-		// sense and grab computer piece once user is done
-		senseComputerPiece();
-		// find where the opponent put their piece
-		findPlayerPiece();
-		// if winner, play sound and end program
-		int winner = checkWinner();
-		if (winner != 0)
-		{
-			playEndSound(winner);
-			break;
-		}
-		// computer determines best move
-		computerMove();
-		// return home
-		moveToLocation(0, 0);
-		// let the user know it's their turn
-		nextTurnSound();
-	}
+
 }

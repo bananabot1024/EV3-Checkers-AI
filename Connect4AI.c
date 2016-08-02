@@ -6,16 +6,20 @@
 
 // define global array variable to store the state of the board
 // 6 rows, 7 columns
-// 0 for empty, 1 for opponent, 2 for robot
+// values: 0 for empty, 1 for player, 2 for com
 int board[6][7];
 
+// we don't need to differentiate between red or yellow
+// there will only be one new opponent piece every turn
 #define colorMin 20
 
+int numRobotMoves = 0;
+
 // define data structures to store the encoder values of certain positions
-#define sensorHorizontal[7] [250, 356, 460, 560, 662, 765, 867]
-#define armHorizontal[7] [356, 460, 560, 662, 765, 867, 970]
-//#define sensorVertical[6]
-//#define armTop 
+#define sensorHorizontal [250, 356, 460, 560, 662, 765, 867]
+#define armHorizontal [356, 460, 560, 662, 765, 867, 970]
+// #define sensorVertical[6]
+// #define armTop
 
 void nextTurnSound()
 {
@@ -69,6 +73,16 @@ void playEndSound(int winner)
 		// play winning sound
 		playSoundFile("/home/root/lms2012/prjs/rc/win2");
 		sleep(2000);
+	}
+	else if (winner == 0){
+		// play tie sound (beep 3 times)
+		for (int i = 0; i < 3; i++)
+		{
+			playTone(100,30);
+			while(bSoundActive)
+				sleep(1);
+			delay(300);
+		}
 	}
 	else
 	{
@@ -131,13 +145,13 @@ int checkWinner()
 	// check bottom left to top right diagonal
 	for (int c = 0; c <= 3; c++)
 	{
-		for (int r = 0; r <= 2; r++)
+		for (int r = 5; r >= 3; r--)
 		{
-			if (board[r][c] == 1 && board[r + 1][c + 1] == 1 && board[r + 2][c + 2] == 1 && board[r + 3][c + 3] == 1)
+			if (board[r][c] == 1 && board[r - 1][c + 1] == 1 && board[r - 2][c + 2] == 1 && board[r - 3][c + 3] == 1)
 			{
 				return 1;
 			}
-			if (board[r][c] == 2 && board[r + 1][c + 1] == 2 && board[r + 2][c + 2] == 2 && board[r + 3][c + 3] == 2)
+			if (board[r][c] == 2 && board[r - 1][c + 1] == 2 && board[r - 2][c + 2] == 2 && board[r - 3][c + 3] == 2)
 			{
 				return 2;
 			}
@@ -195,6 +209,7 @@ void computerMove()
 	// TODO
 	// move to location
 	// fling arm
+	numRobotMoves++;
 }
 
 task main()
@@ -215,6 +230,11 @@ task main()
 		{
 			playEndSound(winner);
 			break;
+		}
+		// if not winner, check for ties
+		if (numRobotMoves == 21)
+		{
+			playEndSound(0);
 		}
 		// computer determines best move
 		computerMove();
