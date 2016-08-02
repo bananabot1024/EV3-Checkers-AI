@@ -18,8 +18,8 @@ int numRobotMoves = 0;
 // define data structures to store the encoder values of certain positions
 #define sensorHorizontal [250, 356, 460, 560, 662, 765, 867]
 #define armHorizontal [356, 460, 560, 662, 765, 867, 970]
-// #define sensorVertical[6]
-// #define armTop
+#define sensorVertical [0, 0, 0, 0, 0, 0]
+#define armTop 0
 
 void nextTurnSound()
 {
@@ -170,7 +170,6 @@ void findPlayerPiece()
 			if (board[row][column] == 0)
 			{
 				// move there
-				// TODO
 
 				// check if piece there
 				if (getColorReflected(S3) >= colorMin)
@@ -205,16 +204,15 @@ int minimax(int depth, int turn)
 // algorithm implements minimax with alpha-beta pruning
 void computerMove()
 {
-	// int column = minimax();
-	// TODO
-	// move to location
-	// fling arm
+	int column = minimax();
+	moveToLocation(armHorizontal[column], armTop);
+	rotateArm();
 	numRobotMoves++;
 }
 
 task main()
 {
-	// sync the two drive train motors because the robot only moves straight
+	// sync the two drive train motors because the robot only needs to move straight
 	setMotorSync(leftMotor, rightMotor, 0, 80);
 	// let the user know it's their turn
 	nextTurnSound();
