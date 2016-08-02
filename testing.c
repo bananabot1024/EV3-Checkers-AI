@@ -25,6 +25,7 @@ int numRobotMoves = 0;
 
 // define data structures to store the encoder values of certain positions
 <<<<<<< HEAD
+<<<<<<< HEAD
 int sensorHorizontal[7] = {250, 356, 460, 560, 662, 765, 867};
 int armHorizontal[7] = {356, 460, 560, 662, 765, 867, 970};
 int sensorVertical[6] = {0, 0, 0, 0, 0, 0};
@@ -107,6 +108,12 @@ void playEndSound(int winner)
 		sleep(4000);
 	}
 }
+=======
+#define sensorHorizontal [250, 356, 460, 560, 662, 765, 867]
+#define armHorizontal [356, 460, 560, 662, 765, 867, 970]
+// #define sensorVertical[6]
+// #define armTop
+>>>>>>> parent of 3325e47... updated testing program to match master program
 
 task main()
 {
@@ -191,5 +198,8 @@ int checkWinner()
 task main()
 {
 
+<<<<<<< HEAD
+>>>>>>> parent of 3325e47... updated testing program to match master program
+=======
 >>>>>>> parent of 3325e47... updated testing program to match master program
 }

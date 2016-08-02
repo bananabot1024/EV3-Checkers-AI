@@ -6,8 +6,8 @@
 
 // define global array variable to store the state of the board
 // 6 rows, 7 columns
-// values: 0 for empty, 1 for player, 2 for com
-
+// values: 0 for empty, 1 for player, 2 for computer
+int board[6][7];
 int boardMinimax[6][7];
 
 // we don't need to differentiate between red or yellow
@@ -52,9 +52,7 @@ void senseComputerPiece()
 		// if computer piece is sensed
 	  if (getColorReflected(S3) >= colorMin)
 		{
-			// move over so the arm is in position
-			setMotorTarget(leftMotor, 100, 70);
-			waitUntilMotorStop(leftMotor);
+			delay(300);
 			// pick up the chip
 			rotateArm();
 		}
@@ -100,8 +98,6 @@ void playEndSound(int winner)
 
 int checkWinner()
 {
-	int board[6][7]= {{0,0,0,0,0,0,0}, {0,0,0,0,0,0,0}, {0,0,0,0,0,0,0}, {0,0,0,0,0,0,0}, {0,0,0,0,0,0,0},
-	{0,0,0,0,0,0,0}};
 	// check horizontal
 	for (int row = 0; row <= 5; row++)
 	{
@@ -151,22 +147,21 @@ int checkWinner()
 	}
 
 	// check bottom left to top right diagonal
-	for (int leftCol = 0; leftCol <= 3; leftCol++)
+	int leftCol = 0;
+	int r = 4;
+	int i = board[leftCol][1];
+	for (leftCol = 0; leftCol <= 3; leftCol++)
 	{
 		for (int bottomRow = 5; bottomRow >= 3; bottomRow--)
 		{
-			//if (board[bottomRow][leftCol] == 1 && board[bottomRow - 1][leftCol + 1] == 1 && board[bottomRow - 2][leftCol + 2] == 1 && board[bottomRow - 3][leftCol + 3] == 1)
-			//displayBigTextLine(4, "%d  %d", bottomRow - 1, leftCol + 1);
-				//delay(1000);
-			int i = 1;
-			if (board[i - 1][3 + 1] == 1)
+			if (board[bottomRow][leftCol] == 1 && board[bottomRow - 1][leftCol + 1] == 1 && board[bottomRow - 2][leftCol + 2] == 1 && board[bottomRow - 3][leftCol + 3] == 1)
 			{
 				return 1;
 			}
-			//if (board[bottomRow][leftCol] == 2 && board[bottomRow - 1][leftCol + 1] == 2 && board[bottomRow - 2][leftCol + 2] == 2 && board[bottomRow - 3][leftCol + 3] == 2)
-			//{
-			// return 2;
-			//}
+			if (board[bottomRow][leftCol] == 2 && board[bottomRow - 1][leftCol + 1] == 2 && board[bottomRow - 2][leftCol + 2] == 2 && board[bottomRow - 3][leftCol + 3] == 2)
+			{
+				return 2;
+			}
 		}
 	}
 	return 0;
@@ -211,19 +206,20 @@ int checkWinnerMinimax()
 	}
 
 	// check top left to bottom right diagonal
+
 	for (int leftCol = 0; leftCol <= 3; leftCol++)
 	{
-		for (int topRow = 0; topRow <= 2; topRow++)
+		for (int bottomRow = 5; bottomRow >= 3; bottomRow--)
 		{
-			return 1;
-			//if (boardMinimax[topRow][leftCol] == 1 && boardMinimax[topRow + 1][leftCol + 1] == 1 && boardMinimax[topRow + 2][leftCol + 2] == 1 && boardMinimax[topRow + 3][leftCol + 3] == 1)
-			//{
-			//	return 1;
-			//}
-			//if (boardMinimax[topRow][leftCol] == 2 && boardMinimax[topRow + 1][leftCol + 1] == 2 && boardMinimax[topRow + 2][leftCol + 2] == 2 && boardMinimax[topRow + 3][leftCol + 3] == 2)
-			//{
-			//	return 2;
-			//}
+			int i = -3;
+			if (boardMinimax[bottomRow][leftCol] == 1 && boardMinimax[bottomRow + 1][leftCol + 1] == 1 && boardMinimax[bottomRow + 2][leftCol + 2] == 1 && boardMinimax[bottomRow -i][leftCol + 3] == 1)
+			{
+				return 1;
+			}
+			if (boardMinimax[bottomRow][leftCol] == 2 && boardMinimax[bottomRow + 1][leftCol + 1] == 2 && boardMinimax[bottomRow + 2][leftCol + 2] == 2 && boardMinimax[bottomRow -i][leftCol + 3] == 2)
+			{
+				return 2;
+			}
 		}
 	}
 
@@ -247,8 +243,6 @@ int checkWinnerMinimax()
 
 void findPlayerPiece()
 {
-	int board[6][7]= {{0,0,0,0,0,0,0}, {0,0,0,0,0,0,0}, {0,0,0,0,0,0,0}, {0,0,0,0,0,0,0}, {0,0,0,0,0,0,0},
-	{0,0,0,0,0,0,0}};
 	// loop through each bottom empty piece (possible locations of user move)
 	for (int column = 6; column >= 0; column--)
 	{
@@ -275,7 +269,7 @@ void findPlayerPiece()
 // "score" assigned to board configuration depending on how beneficial the move is
 int minimaxHeuristic()
 {
-	return 1;
+	return 0;
 }
 
 // algorithm implements minimax with alpha beta pruning
@@ -367,7 +361,7 @@ void computerMove()
 
 task main()
 {
-	/*// sync the two drive train motors because the robot only needs to move straight
+	// sync the two drive train motors because the robot only needs to move straight
 	setMotorSync(leftMotor, rightMotor, 0, 80);
 	// let the user know it's their turn
 	nextTurnSound();
@@ -395,6 +389,5 @@ task main()
 		moveToLocation(0, 0);
 		// let the user know it's their turn
 		nextTurnSound();
-	}*/
-	checkWinner();
+	}
 }
