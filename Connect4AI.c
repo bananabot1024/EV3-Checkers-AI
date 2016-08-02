@@ -11,10 +11,11 @@ int board[6][7];
 int boardMinimax[6][7];
 
 // we don't need to differentiate between red or yellow
-// there will only be one new opponent piece every turn
+// because there will only be one new opponent piece every turn
 #define colorMin 20
 
 int numRobotMoves = 0;
+int maxCol;
 
 // define data structures to store the encoder values of certain positions
 int sensorHorizontal[7] = {250, 356, 460, 560, 662, 765, 867};
@@ -48,9 +49,10 @@ void senseComputerPiece()
 {
 	while (true)
 	{
-		// if red sensed
+		// if computer piece is sensed
 	  if (getColorReflected(S3) >= colorMin)
 		{
+			// pick up the chip
 			rotateArm();
 		}
 		break;
@@ -128,15 +130,15 @@ int checkWinner()
 	}
 
 	// check top left to bottom right diagonal
-	for (int topLeftColumn = 0; topLeftColumn <= 3; topLeftColumn++)
+	for (int leftCol = 0; leftCol <= 3; leftCol++)
 	{
-		for (int topLeftRow = 0; topLeftRow <= 2; topLeftRow++)
+		for (int topRow = 0; topRow <= 2; topRow++)
 		{
-			if (board[topLeftRow][topLeftColumn] == 1 && board[topLeftRow + 1][topLeftColumn + 1] == 1 && board[topLeftRow + 2][topLeftColumn + 2] == 1 && board[topLeftRow + 3][topLeftColumn + 3] == 1)
+			if (board[topRow][leftCol] == 1 && board[topRow + 1][leftCol + 1] == 1 && board[topRow + 2][leftCol + 2] == 1 && board[topRow + 3][leftCol + 3] == 1)
 			{
 				return 1;
 			}
-			if (board[topLeftRow][topLeftColumn] == 2 && board[topLeftRow + 1][topLeftColumn + 1] == 2 && board[topLeftRow + 2][topLeftColumn + 2] == 2 && board[topLeftRow + 3][topLeftColumn + 3] == 2)
+			if (board[topRow][leftCol] == 2 && board[topRow + 1][leftCol + 1] == 2 && board[topRow + 2][leftCol + 2] == 2 && board[topRow + 3][leftCol + 3] == 2)
 			{
 				return 2;
 			}
@@ -144,15 +146,15 @@ int checkWinner()
 	}
 
 	// check bottom left to top right diagonal
-	for (int c = 0; c <= 3; c++)
+	for (int leftCol = 0; leftCol <= 3; leftCol++)
 	{
-		for (int r = 5; r >= 3; r--)
+		for (int bottomRow = 5; bottomRow >= 3; bottomRow--)
 		{
-			if (board[r][c] == 1 && board[r - 1][c + 1] == 1 && board[r - 2][c + 2] == 1 && board[r - 3][c + 3] == 1)
+			if (board[bottomRow][leftCol] == 1 && board[bottomRow - 1][leftCol + 1] == 1 && board[bottomRow - 2][leftCol + 2] == 1 && board[bottomRow - 3][leftCol + 3] == 1)
 			{
 				return 1;
 			}
-			if (board[r][c] == 2 && board[r - 1][c + 1] == 2 && board[r - 2][c + 2] == 2 && board[r - 3][c + 3] == 2)
+			if (board[bottomRow][leftCol] == 2 && board[bottomRow - 1][leftCol + 1] == 2 && board[bottomRow - 2][leftCol + 2] == 2 && board[bottomRow - 3][leftCol + 3] == 2)
 			{
 				return 2;
 			}
@@ -161,9 +163,10 @@ int checkWinner()
 	return 0;
 }
 
-// Note that this is quite repetitive compared to checkWinner()
+// This is almost the exact same thing as checkWinner()
 // but this is because RobotC doesn't allow you to pass arrays into functions
-// so the easiest way to check if there is a winner is to write a separate function for each array needed to be checked
+// so the easiest way to check if there is a winner for two different board arrays
+// is to write a separate function for each array needed to be checked
 int checkWinnerMinimax()
 {
 	// check horizontal
@@ -199,15 +202,15 @@ int checkWinnerMinimax()
 	}
 
 	// check top left to bottom right diagonal
-	for (int topLeftColumn = 0; topLeftColumn <= 3; topLeftColumn++)
+	for (int leftCol = 0; leftCol <= 3; leftCol++)
 	{
-		for (int topLeftRow = 0; topLeftRow <= 2; topLeftRow++)
+		for (int topRow = 0; topRow <= 2; topRow++)
 		{
-			if (boardMinimax[topLeftRow][topLeftColumn] == 1 && boardMinimax[topLeftRow + 1][topLeftColumn + 1] == 1 && boardMinimax[topLeftRow + 2][topLeftColumn + 2] == 1 && boardMinimax[topLeftRow + 3][topLeftColumn + 3] == 1)
+			if (boardMinimax[topRow][leftCol] == 1 && boardMinimax[topRow + 1][leftCol + 1] == 1 && boardMinimax[topRow + 2][leftCol + 2] == 1 && boardMinimax[topRow + 3][leftCol + 3] == 1)
 			{
 				return 1;
 			}
-			if (boardMinimax[topLeftRow][topLeftColumn] == 2 && boardMinimax[topLeftRow + 1][topLeftColumn + 1] == 2 && boardMinimax[topLeftRow + 2][topLeftColumn + 2] == 2 && boardMinimax[topLeftRow + 3][topLeftColumn + 3] == 2)
+			if (boardMinimax[topRow][leftCol] == 2 && boardMinimax[topRow + 1][leftCol + 1] == 2 && boardMinimax[topRow + 2][leftCol + 2] == 2 && boardMinimax[topRow + 3][leftCol + 3] == 2)
 			{
 				return 2;
 			}
@@ -215,15 +218,15 @@ int checkWinnerMinimax()
 	}
 
 	// check bottom left to top right diagonal
-	for (int c = 0; c <= 3; c++)
+	for (int leftCol = 0; leftCol <= 3; leftCol++)
 	{
-		for (int r = 5; r >= 3; r--)
+		for (int bottomRow = 5; bottomRow >= 3; bottomRow--)
 		{
-			if (boardMinimax[r][c] == 1 && boardMinimax[r - 1][c + 1] == 1 && boardMinimax[r - 2][c + 2] == 1 && boardMinimax[r - 3][c + 3] == 1)
+			if (boardMinimax[bottomRow][leftCol] == 1 && boardMinimax[bottomRow - 1][leftCol + 1] == 1 && boardMinimax[bottomRow - 2][leftCol + 2] == 1 && boardMinimax[bottomRow - 3][leftCol + 3] == 1)
 			{
 				return 1;
 			}
-			if (boardMinimax[r][c] == 2 && boardMinimax[r - 1][c + 1] == 2 && boardMinimax[r - 2][c + 2] == 2 && boardMinimax[r - 3][c + 3] == 2)
+			if (boardMinimax[bottomRow][leftCol] == 2 && boardMinimax[bottomRow - 1][leftCol + 1] == 2 && boardMinimax[bottomRow - 2][leftCol + 2] == 2 && boardMinimax[bottomRow - 3][leftCol + 3] == 2)
 			{
 				return 2;
 			}
@@ -242,7 +245,7 @@ void findPlayerPiece()
 			if (board[row][column] == 0)
 			{
 				// move there
-
+				moveToLocation(sensorHorizontal[column], sensorVertical[row]);
 				// check if piece there
 				if (getColorReflected(S3) >= colorMin)
 				{
@@ -292,6 +295,8 @@ int minimax(int depth, bool robotTurn)
 				if (bestValue > currentValue)
 				{
 					bestValue = currentValue;
+					// save the column number so it can be returned later
+					maxCol = col;
 				}
 				// reset boardMinimax
 				boardMinimax[row][col] = 0;
@@ -331,7 +336,7 @@ int minimax(int depth, bool robotTurn)
 			}
 		}
 	}
-	return 0;
+	return maxCol;
 }
 
 void computerMove()
