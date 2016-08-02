@@ -8,6 +8,7 @@
 // 6 rows, 7 columns
 // values: 0 for empty, 1 for player, 2 for com
 int board[6][7];
+int boardMinimax[6][7];
 
 // we don't need to differentiate between red or yellow
 // there will only be one new opponent piece every turn
@@ -16,9 +17,9 @@ int board[6][7];
 int numRobotMoves = 0;
 
 // define data structures to store the encoder values of certain positions
-#define sensorHorizontal [250, 356, 460, 560, 662, 765, 867]
-#define armHorizontal [356, 460, 560, 662, 765, 867, 970]
-#define sensorVertical [0, 0, 0, 0, 0, 0]
+int sensorHorizontal[7] = {250, 356, 460, 560, 662, 765, 867};
+int armHorizontal[7] = {356, 460, 560, 662, 765, 867, 970};
+int sensorVertical[6] = {0, 0, 0, 0, 0, 0};
 #define armTop 0
 
 void nextTurnSound()
@@ -160,6 +161,77 @@ int checkWinner()
 	return 0;
 }
 
+// Note that this is quite repetitive compared to checkWinner()
+// but this is because RobotC doesn't allow you to pass arrays into functions
+// so the easiest way to check if there is a winner is to write a separate function for each array needed to be checked
+int checkWinnerMinimax()
+{
+	// check horizontal
+	for (int row = 0; row <= 5; row++)
+	{
+		for (int colStart = 0; colStart <= 3; colStart++)
+		{
+			if (boardMinimax[row][colStart] == 1 && boardMinimax[row][colStart + 1] == 1 && boardMinimax[row][colStart + 2] == 1 && boardMinimax[row][colStart + 3] == 1)
+			{
+				return 1;
+			}
+			if (boardMinimax[row][colStart] == 2 && boardMinimax[row][colStart + 1] == 2 && boardMinimax[row][colStart + 2] == 2 && boardMinimax[row][colStart + 3] == 2)
+			{
+				return 2;
+			}
+		}
+	}
+
+	// check vertical
+	for (int col = 0; col <= 6; col++)
+	{
+		for (int rowStart = 0; rowStart <= 2; rowStart++)
+		{
+			if (boardMinimax[rowStart][col] == 1 && boardMinimax[rowStart + 1][col] == 1 && boardMinimax[rowStart + 2][col] == 1 && boardMinimax[rowStart + 3][col] == 1)
+			{
+				return 1;
+			}
+			if (boardMinimax[rowStart][col] == 2 && boardMinimax[rowStart + 1][col] == 2 && boardMinimax[rowStart + 2][col] == 2 && boardMinimax[rowStart + 3][col] == 2)
+			{
+				return 2;
+			}
+		}
+	}
+
+	// check top left to bottom right diagonal
+	for (int topLeftColumn = 0; topLeftColumn <= 3; topLeftColumn++)
+	{
+		for (int topLeftRow = 0; topLeftRow <= 2; topLeftRow++)
+		{
+			if (boardMinimax[topLeftRow][topLeftColumn] == 1 && boardMinimax[topLeftRow + 1][topLeftColumn + 1] == 1 && boardMinimax[topLeftRow + 2][topLeftColumn + 2] == 1 && boardMinimax[topLeftRow + 3][topLeftColumn + 3] == 1)
+			{
+				return 1;
+			}
+			if (boardMinimax[topLeftRow][topLeftColumn] == 2 && boardMinimax[topLeftRow + 1][topLeftColumn + 1] == 2 && boardMinimax[topLeftRow + 2][topLeftColumn + 2] == 2 && boardMinimax[topLeftRow + 3][topLeftColumn + 3] == 2)
+			{
+				return 2;
+			}
+		}
+	}
+
+	// check bottom left to top right diagonal
+	for (int c = 0; c <= 3; c++)
+	{
+		for (int r = 5; r >= 3; r--)
+		{
+			if (boardMinimax[r][c] == 1 && boardMinimax[r - 1][c + 1] == 1 && boardMinimax[r - 2][c + 2] == 1 && boardMinimax[r - 3][c + 3] == 1)
+			{
+				return 1;
+			}
+			if (boardMinimax[r][c] == 2 && boardMinimax[r - 1][c + 1] == 2 && boardMinimax[r - 2][c + 2] == 2 && boardMinimax[r - 3][c + 3] == 2)
+			{
+				return 2;
+			}
+		}
+	}
+	return 0;
+}
+
 void findPlayerPiece()
 {
 	// loop through each bottom empty piece (possible locations of user move)
@@ -185,26 +257,86 @@ void findPlayerPiece()
 	}
 }
 
-// turn: 1 = computer, -1 = opponent
-int minimax(int depth, int turn)
+// algorithm implements minimax with alpha beta pruning
+int minimax(int depth, bool robotTurn)
 {
-	if (depth == 0)
+	if (depth == 0 || checkWinnerMinimax() == 1 || checkWinnerMinimax() == 2)
 	{
-
+		// return heuristic value of node
+		// ("score" assigned to board configuration depending on how beneficial the move is)
 	}
-	// final game state: rank according to win, draw, loss
-	// intermediate game states:
-	// if computer move: game state = max rank of available moves
-	// if opponent move: game state = min rank of available moves
-	// TODO
-	int column = 0;
-	return column;
+	// if maximizing player (computer)
+	if (robotTurn)
+	{
+		int bestValue = -1000000;
+		// loop through each child of node (response to current play)
+		for (int col = 0; col < 7; col++)
+		{
+			// if legal (at least one space in that column is empty)
+			if (boardMinimax[0][col] == 0)
+			{
+				// update boardMinimax
+				int row = 5;
+				for (row = 5; row >= 0; row--)
+				{
+					if (boardMinimax[row][col] == 0)
+					{
+						boardMinimax[row][col] = 2;
+						break;
+					}
+				}
+				int currentValue = 0;
+				// call minimax again with new values
+				currentValue = minimax(depth - 1, false);
+				// update bestValue
+				if (bestValue > currentValue)
+				{
+					bestValue = currentValue;
+				}
+				// reset boardMinimax
+				boardMinimax[row][col] = 0;
+			}
+		}
+	}
+	// if minimizing player (opponent)
+	else
+	{
+		int worstValue = 1000000;
+		// loop through each child of node (response to current play)
+		for (int col = 0; col < 7; col++)
+		{
+			// if legal (at least one space in that column is empty)
+			if (boardMinimax[0][col] == 0)
+			{
+				// update boardMinimax
+				int row;
+				for (row = 5; row >= 0; row--)
+				{
+					if (boardMinimax[row][col] == 0)
+					{
+						boardMinimax[row][col] = 1;
+						break;
+					}
+				}
+				int currentValue = 0;
+				// call minimax again with new values
+				currentValue = minimax(depth - 1, true);
+				// update worstValue
+				if (worstValue < currentValue)
+				{
+					worstValue = currentValue;
+				}
+				// reset boardMinimax
+				boardMinimax[row][col] = 0;
+			}
+		}
+	}
+	return 0;
 }
 
-// algorithm implements minimax with alpha-beta pruning
 void computerMove()
 {
-	int column = minimax();
+	int column = minimax(4, 1);
 	moveToLocation(armHorizontal[column], armTop);
 	rotateArm();
 	numRobotMoves++;

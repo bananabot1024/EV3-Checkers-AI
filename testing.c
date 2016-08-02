@@ -14,6 +14,8 @@ int board[6][7] = {{0,0,1,1,1,1,0},
 									{0,0,0,0,0,0,0},
 									{0,0,0,0,0,0,0}};
 
+
+
 // we don't need to differentiate between red or yellow
 // there will only be one new opponent piece every turn
 #define colorMin 20
