@@ -9,16 +9,13 @@
 // 0 for empty, 1 for opponent, 2 for robot
 int board[6][7];
 
-// computer is red, player is yellow
-// red 50, yellow 72
-#define redMin 43
-#define redMax 57
-#define yellowMin 65
-#define yellowMax 80
+#define colorMin 20
 
-// define array(s) to store the encoder values of certain positions
-// including arm fling, color sense (horizontal) needed locations and vertical
-// TODO
+// define data structures to store the encoder values of certain positions
+#define sensorHorizontal[7] [250, 356, 460, 560, 662, 765, 867]
+#define armHorizontal[7] [356, 460, 560, 662, 765, 867, 970]
+//#define sensorVertical[6]
+//#define armTop 
 
 void nextTurnSound()
 {
@@ -47,7 +44,7 @@ void senseComputerPiece()
 	while (true)
 	{
 		// if red sensed
-	  if (getColorReflected(S3) >= redMin && getColorReflected(S3) <= redMax)
+	  if (getColorReflected(S3) >= colorMin)
 		{
 			rotateArm();
 		}
@@ -162,7 +159,7 @@ void findPlayerPiece()
 				// TODO
 
 				// check if piece there
-				if (getColorReflected(S3) > yellowMin && getColorReflected(S3) < yellowMax)
+				if (getColorReflected(S3) >= colorMin)
 				{
 					board[row][column] = 1;
 				}
