@@ -206,7 +206,6 @@ int checkWinnerMinimax()
 	}
 
 	// check top left to bottom right diagonal
-
 	for (int leftCol = 0; leftCol <= 3; leftCol++)
 	{
 		for (int bottomRow = 5; bottomRow >= 3; bottomRow--)
@@ -269,7 +268,131 @@ void findPlayerPiece()
 // "score" assigned to board configuration depending on how beneficial the move is
 int minimaxHeuristic()
 {
-	return 0;
+	bool minimaxVisited[6][7];
+	int score = 0;
+	// check 4 in a rows
+	// if opponent won
+	if (checkWinnerMinimax() == 1)
+	{
+		return -10000;
+	}
+	// if robot won
+	if (checkWinnerMinimax() == 2)
+	{
+		return 10000;
+	}
+
+	// check defensive plays (only to block sure opponent wins)
+
+	// 3 in a rows
+
+	// 2 in a rows
+	for (int row = 0; row <= 5; row++)
+	{
+		for (int col = 0; col <= 5; col++) {
+			// player horizontal
+			if (boardMinimax[row][col] == 1 && boardMinimax[row][col + 1] == 1 && !minimaxVisited[row][col] && !minimaxVisited[row][col + 1])
+			{
+				// mark as visited
+				minimaxVisited[row][col] = true;
+				minimaxVisited[row][col + 1] = true;
+				score -= 5;
+			}
+			// robot horizontal
+			else if (boardMinimax[row][col] == 2 && boardMinimax[row][col + 1] == 2 && !minimaxVisited[row][col] && !minimaxVisited[row][col + 1])
+			{
+				// mark as visited
+				minimaxVisited[row][col] = true;
+				minimaxVisited[row][col + 1] = true;
+				score += 5;
+			}
+		}
+	}
+	for (int col = 0; col <= 6; col++)
+	{
+		for (int row = 0; row <= 4; row++)
+		{
+			// player vertical
+			if (boardMinimax[row][col] == 1 && boardMinimax[row + 1][col] == 1 && !minimaxVisited[row][col] && !minimaxVisited[row + 1][col])
+			{
+				// mark as visited
+				minimaxVisited[row][col] = true;
+				minimaxVisited[row + 1][col] = true;
+				score -= 5;
+			}
+			// robot vertical
+			else if (boardMinimax[row][col] == 2 && boardMinimax[row + 1][col] == 2 && !minimaxVisited[row][col] && !minimaxVisited[row + 1][col])
+			{
+				// mark as visited
+				minimaxVisited[row][col] = true;
+				minimaxVisited[row + 1][col] = true;
+				score += 5;
+			}
+		}
+	}
+	for (int row = 5; row >= 1; row--)
+	{
+		for (int col = 0; col <= 5; col++)
+		{
+			// player bottom left to top right diagonal
+			if (boardMinimax[row][col] == 1 && boardMinimax[row - 1][col + 1] == 1 && !minimaxVisited[row][col] && !minimaxVisited[row - 1][col + 1])
+			{
+				// mark as visited
+				minimaxVisited[row][col] = true;
+				minimaxVisited[row - 1][col + 1] = true;
+				score -= 5;
+			}
+			// robot bottom left to top right diagonal
+			else if (boardMinimax[row][col] == 2 && boardMinimax[row - 1][col + 1] == 2 && !minimaxVisited[row][col] && !minimaxVisited[row - 1][col + 1])
+			{
+				// mark as visited
+				minimaxVisited[row][col] = true;
+				minimaxVisited[row - 1][col + 1] = true;
+				score += 5;
+			}
+		}
+	}
+	for (int row = 0; row <= 4; row++)
+	{
+		for (int col = 0; col <= 5; col++)
+		{
+			// player top left to bottom right diagonal
+			if (boardMinimax[row][col] == 1 && boardMinimax[row + 1][col + 1] == 1 && !minimaxVisited[row][col] && !minimaxVisited[row + 1][col + 1])
+			{
+				// mark as visited
+				minimaxVisited[row][col] = true;
+				minimaxVisited[row + 1][col + 1] = true;
+				score -= 5;
+			}
+			// robot top left to bottom right diagonal
+			else if (boardMinimax[row][col] == 2 && boardMinimax[row + 1][col + 1] == 2 && !minimaxVisited[row][col] && !minimaxVisited[row + 1][col + 1])
+			{
+				// mark as visited
+				minimaxVisited[row][col] = true;
+				minimaxVisited[row + 1][col + 1] = true;
+				score += 5;
+			}
+		}
+	}
+
+	// 1 single piece
+	for (int row = 0; row <= 5; row++)
+	{
+		for (int col = 0; col <= 6; col++)
+		{
+			// if player piece
+			if (!minimaxVisited[row][col] && minimaxVisited[row][col] == 1)
+			{
+				score -= 1;
+			}
+			// if robot piece
+			else if (!minimaxVisited[row][col] && minimaxVisited[row][col] == 2)
+			{
+				score += 1;
+			}
+		}
+	}
+	return score;
 }
 
 // algorithm implements minimax with alpha beta pruning
@@ -304,7 +427,7 @@ int minimax(int depth, bool robotTurn)
 				// call minimax again with new values
 				currentValue = minimax(depth - 1, false);
 				// update bestValue
-				if (bestValue > currentValue)
+				if (currentValue > bestValue)
 				{
 					bestValue = currentValue;
 					// save the column number so it can be returned later
@@ -339,7 +462,7 @@ int minimax(int depth, bool robotTurn)
 				// call minimax again with new values
 				currentValue = minimax(depth - 1, true);
 				// update worstValue
-				if (worstValue < currentValue)
+				if (currentValue < worstValue)
 				{
 					worstValue = currentValue;
 				}
@@ -353,7 +476,7 @@ int minimax(int depth, bool robotTurn)
 
 void computerMove()
 {
-	int column = minimax(4, 1);
+	int column = minimax(4, true);
 	moveToLocation(armHorizontal[column], armTop);
 	rotateArm();
 	numRobotMoves++;
