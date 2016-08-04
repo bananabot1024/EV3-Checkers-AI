@@ -18,10 +18,10 @@ int numRobotMoves = 0;
 int maxCol;
 
 // define data structures to store the encoder values of certain positions
-int sensorHorizontal[7] = {248, 354, 457, 557, 660, 762, 865};
-int sensorVertical[6] = {0, 102, 197, 287, 377, 467};
-int armHorizontal[7] = {356, 460, 560, 665, 769, 867, 970};
-int armVertical[7] = {510, 510, 510, 510, 510, 515, 520};
+int sensorHorizontal[7] = {241, 344, 445, 544, 644, 745, 845};
+int sensorVertical[6] = {467, 377, 287, 197, 105, 0};
+int armHorizontal[7] = {353, 457, 557, 662, 769, 864, 967};
+int armVertical[7] = {520, 515, 510, 510, 510, 510, 510};
 
 // global variables for checking 3 in a rows in minimax heuristic
 // [0][x] = left row, [1][x] = left col, [2][x] = middle row, [3][x] = middle col, ...
@@ -219,7 +219,7 @@ int checkWinnerMinimax()
 	// check top left to bottom right diagonal
 	for (int leftCol = 0; leftCol <= 3; leftCol++)
 	{
-		for (int bottomRow = 5; bottomRow >= 3; bottomRow--)
+		for (int bottomRow = 0; bottomRow <= 2; bottomRow++)
 		{
 			int i = -3;
 			if (boardMinimax[bottomRow][leftCol] == 1 && boardMinimax[bottomRow + 1][leftCol + 1] == 1 && boardMinimax[bottomRow + 2][leftCol + 2] == 1 && boardMinimax[bottomRow -i][leftCol + 3] == 1)
@@ -262,6 +262,7 @@ void findPlayerPiece()
 			{
 				// move there
 				moveToLocation(sensorHorizontal[column], sensorVertical[row]);
+				delay(200);
 				// check if piece there
 				if (getColorReflected(S3) >= colorMin)
 				{
@@ -598,24 +599,6 @@ int singleOpen(int index, int who)
 	return key;
 }
 
-
-int doubleImmediatelyPlayable(int i, int j, int who)
-{
-	int type1 = singleImmediatelyPlayable(i, who);
-	int type2 = singleImmediatelyPlayable(j, who);
-	// check left
-	if ((type1 == 1 || type1 == 3) && (type2 == 1 || type2 == 3))
-	{
-		return true;
-	}
-	// check right
-	if ((type1 == 2 || type2 == 3) && (type2 == 2 || type2 == 3))
-	{
-		return true;
-	}
-	return false;
-}
-
 int doubleOpen(int i, int j, int who)
 {
 	int type1 = singleOpen(i, who);
@@ -699,7 +682,6 @@ int minimaxHeuristic()
 			}
 		}
 	}
-
 	// vertical
 	for (int c = 0; c<=6; c++)
 	{
@@ -731,7 +713,6 @@ int minimaxHeuristic()
 			}
 		}
 	}
-
 	// diagonals (bottom left to top right)
 	for (int r = 5; r >= 2; r--)
 	{
@@ -763,7 +744,6 @@ int minimaxHeuristic()
 			}
 		}
 	}
-
 	// diagonals (top left to bottom right)
 	for (int r = 0; r<=3; r++)
 	{
@@ -795,50 +775,459 @@ int minimaxHeuristic()
 			}
 		}
 	}
-	// determine type of intersection (if any) and assign score
-	// loop through all combinations of pairs of 3s
+	// check 3s (double threats) for player
 	for (int i = 0; i < numPlayerThrees; i++)
 	{
-		for (int j = i+1; j < numPlayerThrees; j++)
+		if (playerType[i] == 'h')
 		{
-			// both horizontal
-			if (playerType[i] == 'h' && playerType[j] == 'h')
+			if (playerThrees[1][i] > 0)
 			{
-				// if columns same
-				if (playerThrees[1][i] == playerThrees[1][j])
+				if (boardMinimax[playerThrees[0][i]][playerThrees[1][i] - 1] == 0)
 				{
-					// if rows one apart
-					if (playerThrees[0][i] - playerThrees[0][j] == 1 || playerThrees[0][i] - playerThrees[0][j] == -1)
+					boardMinimax[playerThrees[0][i]][playerThrees[1][i] - 1] = 3;
+				}
+			}
+			if (playerThrees[5][i] < 6)
+			{
+				if (boardMinimax[playerThrees[4][i]][playerThrees[5][i] + 1] == 0)
+				{
+					boardMinimax[playerThrees[4][i]][playerThrees[5][i] + 1] = 3;
+				}
+			}
+		}
+		else if (playerType[i] == 'v')
+		{
+			if (playerThrees[0][i] > 0)
+			{
+				if (boardMinimax[playerThrees[0][i] - 1][playerThrees[1][i]] == 0)
+				{
+					boardMinimax[playerThrees[0][i] - 1][playerThrees[1][i]] = 3;
+				}
+			}
+			if (playerThrees[4][i] < 5)
+			{
+				if (boardMinimax[playerThrees[4][i] + 1][playerThrees[5][i]] == 0)
+				{
+					boardMinimax[playerThrees[4][i] + 1][playerThrees[5][i]] = 3;
+				}
+			}
+		}
+		else if (playerType[i] == 'b')
+		{
+			if (playerThrees[0][i] < 5 && playerThrees[1][i] > 0)
+			{
+				if (boardMinimax[playerThrees[0][i] + 1][playerThrees[1][i] - 1] == 0)
+				{
+					boardMinimax[playerThrees[0][i] + 1][playerThrees[1][i] - 1] = 3;
+				}
+			}
+			if (playerThrees[4][i] > 0 && playerThrees[5][i] < 6)
+			{
+				if (boardMinimax[playerThrees[4][i] - 1][playerThrees[5][i] + 1] == 0)
+				{
+					boardMinimax[playerThrees[4][i] - 1][playerThrees[5][i] + 1] = 3;
+				}
+			}
+		}
+		else if (playerType[i] == 't')
+		{
+			if (playerThrees[0][i] > 0 && playerThrees[1][i] > 0)
+			{
+				if (boardMinimax[playerThrees[0][i] - 1][playerThrees[1][i] - 1] == 0)
+				{
+					boardMinimax[playerThrees[0][i] - 1][playerThrees[1][i] - 1] = 3;
+				}
+			}
+			if (playerThrees[4][i] < 5 && playerThrees[5][i] < 6)
+			{
+				if (boardMinimax[playerThrees[4][i] + 1][playerThrees[5][i] + 1] == 0)
+				{
+					boardMinimax[playerThrees[4][i] + 1][playerThrees[5][i] + 1] = 3;
+				}
+			}
+		}
+	}
+	// check for any two hotspots (3s) one right above the other
+	for (int r = 0; r <= 4; r++)
+	{
+		for (int c = 0; c <= 6; c++)
+		{
+			// if so, decrement score by 850 (the remaining 150 is decremented later when counting pairs of 3s)
+			// these 3s will also be marked visited then, so no need to mark visited now
+			if (boardMinimax[r][c] == 3 && boardMinimax[r + 1][c] == 3)
+			{
+				score -= 850;
+				// if immediately playable, increment score by another 1000
+				if (r == 4 || boardMinimax[r + 2][c] != 0)
+				{
+					score -= 1000;
+				}
+			}
+		}
+	}
+	// reset 3s to 0s
+	for (int r = 0; r <= 5; r++)
+	{
+		for (int c = 0; c <= 6; c++)
+		{
+			if (boardMinimax[r][c] == 3)
+			{
+				boardMinimax[r][c] = 0;
+			}
+		}
+	}
+	// check pairs of 3s
+	for (int i = 0; i < numPlayerThrees; i++)
+	{
+		for (int j = i + 1; j < numPlayerThrees; j++)
+		{
+			// if any intersection
+			int a[3][2], b[3][2];
+			a[0][0] = playerThrees[0][i];
+			a[0][1] = playerThrees[1][i];
+			a[1][0] = playerThrees[2][i];
+			a[1][1] = playerThrees[3][i];
+			a[2][0] = playerThrees[4][i];
+			a[2][1] = playerThrees[5][i];
+			b[0][0] = playerThrees[0][j];
+			b[0][1] = playerThrees[1][j];
+			b[1][0] = playerThrees[2][j];
+			b[1][1] = playerThrees[3][j];
+			b[2][0] = playerThrees[4][j];
+			b[2][1] = playerThrees[5][j];
+			for (int m = 0; m < 3; m++)
+			{
+				for (int n = 0; n < 3; n++)
+				{
+					if (a[m][0] == b[n][0] && a[m][1] == b[n][1])
 					{
-						if (doubleOpen(i, j, 1))
+						// check if open (at least one side each)
+						if (singleOpen(i, 1) > 0 && singleOpen(j, 1) > 0)
 						{
-							score += 1000;
-							if (doubleImmediatelyPlayable(i, j, 1))
-							{
-								score += 1000;
-								// mark those as visited
-								minimaxVisited[playerThrees[0][i]][playerThrees[1][i]] = true;
-								minimaxVisited[playerThrees[2][i]][playerThrees[3][i]] = true;
-								minimaxVisited[playerThrees[4][i]][playerThrees[5][i]] = true;
-								minimaxVisited[playerThrees[0][j]][playerThrees[1][j]] = true;
-								minimaxVisited[playerThrees[2][j]][playerThrees[3][j]] = true;
-								minimaxVisited[playerThrees[4][j]][playerThrees[5][j]] = true;
-							}
+							score -= 150;
+							// mark as visited
+							minimaxVisited[playerThrees[0][i]][playerThrees[1][i]] = true;
+							minimaxVisited[playerThrees[2][i]][playerThrees[3][i]] = true;
+							minimaxVisited[playerThrees[4][i]][playerThrees[5][i]] = true;
+							minimaxVisited[playerThrees[0][j]][playerThrees[1][j]] = true;
+							minimaxVisited[playerThrees[2][j]][playerThrees[3][j]] = true;
+							minimaxVisited[playerThrees[4][j]][playerThrees[5][j]] = true;
+						}
+						// check if immediately playable (at least 1 side each)
+						if (singleImmediatelyPlayable(i, 1) > 0 && singleImmediatelyPlayable(j, 1) > 0)
+						{
+							score -= 150;
 						}
 					}
 				}
 			}
-			// not both horizontal
-
 		}
 	}
+	// check 3s (double threats for robot)
+	for (int i = 0; i < numRobotThrees; i++)
+	{
+		if (robotType[i] == 'h')
+		{
+			if (robotThrees[1][i] > 0)
+			{
+				if (boardMinimax[robotThrees[0][i]][robotThrees[1][i] - 1] == 0)
+				{
+					boardMinimax[robotThrees[0][i]][robotThrees[1][i] - 1] = 3;
+				}
+			}
+			if (robotThrees[5][i] < 6)
+			{
+				if (boardMinimax[robotThrees[4][i]][robotThrees[5][i] + 1] == 0)
+				{
+					boardMinimax[robotThrees[4][i]][robotThrees[5][i] + 1] = 3;
+				}
+			}
+		}
+		else if (robotType[i] == 'v')
+		{
+			if (robotThrees[0][i] > 0)
+			{
+				if (boardMinimax[robotThrees[0][i] - 1][robotThrees[1][i]] == 0)
+				{
+					boardMinimax[robotThrees[0][i] - 1][robotThrees[1][i]] = 3;
+				}
+			}
+			if (robotThrees[4][i] < 5)
+			{
+				if (boardMinimax[robotThrees[4][i] + 1][robotThrees[5][i]] == 0)
+				{
+					boardMinimax[robotThrees[4][i] + 1][robotThrees[5][i]] = 3;
+				}
+			}
+		}
+		else if (robotType[i] == 'b')
+		{
+			if (robotThrees[0][i] < 5 && robotThrees[1][i] > 0)
+			{
+				if (boardMinimax[robotThrees[0][i] + 1][robotThrees[1][i] - 1] == 0)
+				{
+					boardMinimax[robotThrees[0][i] + 1][robotThrees[1][i] - 1] = 3;
+				}
+			}
+			if (robotThrees[4][i] > 0 && robotThrees[5][i] < 6)
+			{
+				if (boardMinimax[robotThrees[4][i] - 1][robotThrees[5][i] + 1] == 0)
+				{
+					boardMinimax[robotThrees[4][i] - 1][robotThrees[5][i] + 1] = 3;
+				}
+			}
+		}
+		else if (robotType[i] == 't')
+		{
+			if (robotThrees[0][i] > 0 && robotThrees[1][i] > 0)
+			{
+				if (boardMinimax[robotThrees[0][i] - 1][robotThrees[1][i] - 1] == 0)
+				{
+					boardMinimax[robotThrees[0][i] - 1][robotThrees[1][i] - 1] = 3;
+				}
+			}
+			if (robotThrees[4][i] < 5 && robotThrees[5][i] < 6)
+			{
+				if (boardMinimax[robotThrees[4][i] + 1][robotThrees[5][i] + 1] == 0)
+				{
+					boardMinimax[robotThrees[4][i] + 1][robotThrees[5][i] + 1] = 3;
+				}
+			}
+		}
+	}
+	// check for any two hotspots (3s) one right above the other
+	for (int r = 0; r <= 4; r++)
+	{
+		for (int c = 0; c <= 6; c++)
+		{
+			// if so, decrement score by 850 (the remaining 150 is decremented later when counting pairs of 3s)
+			// these 3s will also be marked visited then, so no need to mark visited now
+			if (boardMinimax[r][c] == 3 && boardMinimax[r + 1][c] == 3)
+			{
+				score += 850;
+				// if immediately playable, increment score by another 1000
+				if (r == 4 || boardMinimax[r + 2][c] != 0)
+				{
+					score += 1000;
+				}
+			}
+		}
+	}
+	// reset 3s to 0s
+	for (int r = 0; r <= 5; r++)
+	{
+		for (int c = 0; c <= 6; c++)
+		{
+			if (boardMinimax[r][c] == 3)
+			{
+				boardMinimax[r][c] = 0;
+			}
+		}
+	}
+	// check pairs of 3s
+	for (int i = 0; i < numRobotThrees; i++)
+	{
+		for (int j = i + 1; j < numRobotThrees; j++)
+		{
+			// if any intersection
+			int a[3][2], b[3][2];
+			a[0][0] = robotThrees[0][i];
+			a[0][1] = robotThrees[1][i];
+			a[1][0] = robotThrees[2][i];
+			a[1][1] = robotThrees[3][i];
+			a[2][0] = robotThrees[4][i];
+			a[2][1] = robotThrees[5][i];
+			b[0][0] = robotThrees[0][j];
+			b[0][1] = robotThrees[1][j];
+			b[1][0] = robotThrees[2][j];
+			b[1][1] = robotThrees[3][j];
+			b[2][0] = robotThrees[4][j];
+			b[2][1] = robotThrees[5][j];
+			for (int m = 0; m < 3; m++)
+			{
+				for (int n = 0; n < 3; n++)
+				{
+					if (a[m][0] == b[n][0] && a[m][1] == b[n][1])
+					{
+						// check if open (at least one side each)
+						if (singleOpen(i, 1) > 0 && singleOpen(j, 1) > 0)
+						{
+							score += 150;
+							// mark as visited
+							minimaxVisited[robotThrees[0][i]][robotThrees[1][i]] = true;
+							minimaxVisited[robotThrees[2][i]][robotThrees[3][i]] = true;
+							minimaxVisited[robotThrees[4][i]][robotThrees[5][i]] = true;
+							minimaxVisited[robotThrees[0][j]][robotThrees[1][j]] = true;
+							minimaxVisited[robotThrees[2][j]][robotThrees[3][j]] = true;
+							minimaxVisited[robotThrees[4][j]][robotThrees[5][j]] = true;
+						}
+						// check if immediately playable (at least 1 side each)
+						if (singleImmediatelyPlayable(i, 1) > 0 && singleImmediatelyPlayable(j, 1) > 0)
+						{
+							score += 150;
+						}
+					}
+				}
+			}
+		}
+	}
+	for (int i = 0; i < numRobotThrees; i++)
+	{
+		if (robotType[i] == 'h')
+		{
+			if (robotThrees[1][i] > 0)
+			{
+				if (boardMinimax[robotThrees[0][i]][robotThrees[1][i] - 1] == 0)
+				{
+					boardMinimax[robotThrees[0][i]][robotThrees[1][i] - 1] = 3;
+				}
+			}
+			if (robotThrees[5][i] < 6)
+			{
+				if (boardMinimax[robotThrees[4][i]][robotThrees[5][i] + 1] == 0)
+				{
+					boardMinimax[robotThrees[4][i]][robotThrees[5][i] + 1] = 3;
+				}
+			}
+		}
+		else if (robotType[i] == 'v')
+		{
+			if (robotThrees[0][i] > 0)
+			{
+				if (boardMinimax[robotThrees[0][i] - 1][robotThrees[1][i]] == 0)
+				{
+					boardMinimax[robotThrees[0][i] - 1][robotThrees[1][i]] = 3;
+				}
+			}
+			if (robotThrees[4][i] < 5)
+			{
+				if (boardMinimax[robotThrees[4][i] + 1][robotThrees[5][i]] == 0)
+				{
+					boardMinimax[robotThrees[4][i] + 1][robotThrees[5][i]] = 3;
+				}
+			}
+		}
+		else if (robotType[i] == 'b')
+		{
+			if (robotThrees[0][i] < 5 && robotThrees[1][i] > 0)
+			{
+				if (boardMinimax[robotThrees[0][i] + 1][robotThrees[1][i] - 1] == 0)
+				{
+					boardMinimax[robotThrees[0][i] + 1][robotThrees[1][i] - 1] = 3;
+				}
+			}
+			if (robotThrees[4][i] > 0 && robotThrees[5][i] < 6)
+			{
+				if (boardMinimax[robotThrees[4][i] - 1][robotThrees[5][i] + 1] == 0)
+				{
+					boardMinimax[robotThrees[4][i] - 1][robotThrees[5][i] + 1] = 3;
+				}
+			}
+		}
+		else if (robotType[i] == 't')
+		{
+			if (robotThrees[0][i] > 0 && robotThrees[1][i] > 0)
+			{
+				if (boardMinimax[robotThrees[0][i] - 1][robotThrees[1][i] - 1] == 0)
+				{
+					boardMinimax[robotThrees[0][i] - 1][robotThrees[1][i] - 1] = 3;
+				}
+			}
+			if (robotThrees[4][i] < 5 && robotThrees[5][i] < 6)
+			{
+				if (boardMinimax[robotThrees[4][i] + 1][robotThrees[5][i] + 1] == 0)
+				{
+					boardMinimax[robotThrees[4][i] + 1][robotThrees[5][i] + 1] = 3;
+				}
+			}
+		}
+	}
+	// check for any two hotspots (3s) one right above the other
+	for (int r = 0; r <= 4; r++)
+	{
+		for (int c = 0; c <= 6; c++)
+		{
+			// if so, decrement score by 850 (the remaining 150 is decremented later when counting pairs of 3s)
+			// these 3s will also be marked visited then, so no need to mark visited now
+			if (boardMinimax[r][c] == 3 && boardMinimax[r + 1][c] == 3)
+			{
+				score += 850;
+				// if immediately playable, increment score by another 1000
+				if (r == 4 || boardMinimax[r + 2][c] != 0)
+				{
+					score += 1000;
+				}
+			}
+		}
+	}
+	// reset 3s to 0s
+	for (int r = 0; r <= 5; r++)
+	{
+		for (int c = 0; c <= 6; c++)
+		{
+			if (boardMinimax[r][c] == 3)
+			{
+				boardMinimax[r][c] = 0;
+			}
+		}
+	}
+	// check pairs of 3s
+	for (int i = 0; i < numRobotThrees; i++)
+	{
+		for (int j = i + 1; j < numRobotThrees; j++)
+		{
+			// if any intersection
+			int a[3][2], b[3][2];
+			a[0][0] = robotThrees[0][i];
+			a[0][1] = robotThrees[1][i];
+			a[1][0] = robotThrees[2][i];
+			a[1][1] = robotThrees[3][i];
+			a[2][0] = robotThrees[4][i];
+			a[2][1] = robotThrees[5][i];
+			b[0][0] = robotThrees[0][j];
+			b[0][1] = robotThrees[1][j];
+			b[1][0] = robotThrees[2][j];
+			b[1][1] = robotThrees[3][j];
+			b[2][0] = robotThrees[4][j];
+			b[2][1] = robotThrees[5][j];
+			for (int m = 0; m < 3; m++)
+			{
+				for (int n = 0; n < 3; n++)
+				{
+					if (a[m][0] == b[n][0] && a[m][1] == b[n][1])
+					{
+						// check if open (at least one side each)
+						if (singleOpen(i, 1) > 0 && singleOpen(j, 1) > 0)
+						{
+							score += 150;
+							// mark as visited
+							minimaxVisited[robotThrees[0][i]][robotThrees[1][i]] = true;
+							minimaxVisited[robotThrees[2][i]][robotThrees[3][i]] = true;
+							minimaxVisited[robotThrees[4][i]][robotThrees[5][i]] = true;
+							minimaxVisited[robotThrees[0][j]][robotThrees[1][j]] = true;
+							minimaxVisited[robotThrees[2][j]][robotThrees[3][j]] = true;
+							minimaxVisited[robotThrees[4][j]][robotThrees[5][j]] = true;
+						}
+						// check if immediately playable (at least 1 side each)
+						if (singleImmediatelyPlayable(i, 1) > 0 && singleImmediatelyPlayable(j, 1) > 0)
+						{
+							score += 150;
+						}
+					}
+				}
+			}
+		}
+	}
+
 	// check remaining single 3 in a rows
 	for (int i = 0; i < numPlayerThrees; i++)
 	{
+		// checks for 3s with 2 empty immediately playable on either side
 		if (singleOpen(i, 1) == 3 && singleImmediatelyPlayable(i, 1) == 3)
 		{
 			score -= 1000;
 		}
+		// checks other misc 3s
 		else if (!minimaxVisited[playerThrees[0][i]][playerThrees[1][i]] && singleOpen(i, 1) > 0)
 		{
 			score -= 100;
@@ -846,10 +1235,12 @@ int minimaxHeuristic()
 	}
 	for (int i = 0; i < numRobotThrees; i++)
 	{
+		// checks for 3s with 2 empty immediately playable on either side
 		if (singleOpen(i, 2) == 3 && singleImmediatelyPlayable(i, 2) == 3)
 		{
 			score += 1000;
 		}
+		// checks other misc 3s
 		else if (!minimaxVisited[robotThrees[0][i]][robotThrees[1][i]] && singleOpen(i, 2) > 0)
 		{
 			score += 100;
@@ -903,8 +1294,8 @@ int minimaxHeuristic()
 	{
 		for (int col = 0; col <= 5; col++)
 		{
-			int a= row-1;
-			int b=col+1;
+			int a = row-1;
+			int b = col+1;
 			// player bottom left to top right diagonal
 			if (boardMinimax[row][col] == 1 && boardMinimax[a][b] == 1 && !minimaxVisited[row][col] && !minimaxVisited[a][b])
 			{
@@ -1008,6 +1399,14 @@ int minimax(int depth, bool robotTurn)
 				boardMinimax[row][col] = 0;
 			}
 		}
+		if (depth == 2)
+		{
+			return maxCol;
+		}
+		else
+		{
+			return bestValue;
+		}
 	}
 	// if minimizing player (opponent)
 	else
@@ -1041,13 +1440,30 @@ int minimax(int depth, bool robotTurn)
 				boardMinimax[row][col] = 0;
 			}
 		}
+		return worstValue;
 	}
 	return maxCol;
 }
 
 void computerMove()
 {
-	int column = 5;
+	int column;
+	// default to col 3 on first move
+	if (numRobotMoves==0){
+		column=3;
+	}
+	// default to col 2 or 4 on second move
+	else if (numRobotMoves==1){
+		if (board[5][2]!=0){
+			column=4;
+		}
+		else if (board[5][4]!=0){
+			column=2;
+		}
+	}
+	else {
+		column= minimax(2, true);
+	}
 	moveToLocation(armHorizontal[column], armVertical[column]);
 	rotateArm();
 	numRobotMoves++;
@@ -1063,8 +1479,6 @@ void computerMove()
 
 task main()
 {
-	// sync the two drive train motors because the robot only needs to move straight
-	//setMotorSync(leftMotor, rightMotor, 0, 80);
 	// let the user know it's their turn
 	nextTurnSound();
 	while (true)
@@ -1073,11 +1487,6 @@ task main()
 		senseComputerPiece();
 		// find where the opponent put their piece
 		findPlayerPiece();
-		for (int i = 0; i < 6; i++)
-		{
-			displayBigTextLine(i+2, "%d %d %d %d %d %d %d", board[i][0], board[i][1], board[i][2], board[i][3], board[i][4], board[i][5], board[i][6]);
-		}
-		delay(1000);
 		// if winner, play sound and end program
 		int winner = checkWinner();
 		if (winner != 0)
@@ -1100,7 +1509,6 @@ task main()
 			playEndSound(winner);
 			break;
 		}
-		displayBigTextLine(4, "%d", winner);
 		// let the user know it's their turn
 		nextTurnSound();
 	}

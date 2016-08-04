@@ -18,10 +18,10 @@ int numRobotMoves = 0;
 int maxCol;
 
 // define data structures to store the encoder values of certain positions
-int sensorHorizontal[7] = {248, 354, 457, 557, 660, 762, 865};
-int sensorVertical[6] = {467, 377, 287, 197, 102, 0};
-int armHorizontal[7] = {356, 460, 560, 665, 772, 867, 970};
-int armVertical[6] = {520, 515, 510, 510, 510, 510};
+int sensorHorizontal[7] = {241, 344, 445, 544, 644, 745, 845};
+int sensorVertical[6] = {467, 377, 287, 197, 105, 0};
+int armHorizontal[7] = {353, 457, 557, 662, 769, 864, 967};
+int armVertical[7] = {520, 515, 510, 510, 510, 510, 510};
 
 // global variables for checking 3 in a rows in minimax heuristic
 // [0][x] = left row, [1][x] = left col, [2][x] = middle row, [3][x] = middle col, ...
@@ -219,7 +219,7 @@ int checkWinnerMinimax()
 	// check top left to bottom right diagonal
 	for (int leftCol = 0; leftCol <= 3; leftCol++)
 	{
-		for (int bottomRow = 5; bottomRow >= 3; bottomRow--)
+		for (int bottomRow = 0; bottomRow <= 2; bottomRow++)
 		{
 			int i = -3;
 			if (boardMinimax[bottomRow][leftCol] == 1 && boardMinimax[bottomRow + 1][leftCol + 1] == 1 && boardMinimax[bottomRow + 2][leftCol + 2] == 1 && boardMinimax[bottomRow -i][leftCol + 3] == 1)
@@ -262,6 +262,7 @@ void findPlayerPiece()
 			{
 				// move there
 				moveToLocation(sensorHorizontal[column], sensorVertical[row]);
+				delay(200);
 				// check if piece there
 				if (getColorReflected(S3) >= colorMin)
 				{
@@ -923,7 +924,7 @@ int minimaxHeuristic()
 		}
 	}
 	// check 3s (double threats for robot)
-		for (int i = 0; i < numRobotThrees; i++)
+	for (int i = 0; i < numRobotThrees; i++)
 	{
 		if (robotType[i] == 'h')
 		{
@@ -1398,6 +1399,14 @@ int minimax(int depth, bool robotTurn)
 				boardMinimax[row][col] = 0;
 			}
 		}
+		if (depth == 2)
+		{
+			return maxCol;
+		}
+		else
+		{
+			return bestValue;
+		}
 	}
 	// if minimizing player (opponent)
 	else
@@ -1431,13 +1440,30 @@ int minimax(int depth, bool robotTurn)
 				boardMinimax[row][col] = 0;
 			}
 		}
+		return worstValue;
 	}
 	return maxCol;
 }
 
 void computerMove()
 {
-	int column = minimax(4, true);
+	int column;
+	// default to col 3 on first move
+	if (numRobotMoves==0){
+		column=3;
+	}
+	// default to col 2 or 4 on second move
+	else if (numRobotMoves==1){
+		if (board[5][2]!=0){
+			column=4;
+		}
+		else if (board[5][4]!=0){
+			column=2;
+		}
+	}
+	else {
+		column= minimax(2, true);
+	}
 	moveToLocation(armHorizontal[column], armVertical[column]);
 	rotateArm();
 	numRobotMoves++;
