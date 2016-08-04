@@ -19,9 +19,9 @@ int maxCol;
 
 // define data structures to store the encoder values of certain positions
 int sensorHorizontal[7] = {248, 354, 457, 557, 660, 762, 865};
-int sensorVertical[6] = {0, 102, 197, 287, 377, 467};
-int armHorizontal[7] = {356, 460, 560, 665, 769, 867, 970};
-int armVertical[7] = {510, 510, 510, 510, 510, 515, 520};
+int sensorVertical[6] = {467, 377, 287, 197, 102, 0};
+int armHorizontal[7] = {356, 460, 560, 665, 772, 867, 970};
+int armVertical[6] = {520, 515, 510, 510, 510, 510};
 
 // global variables for checking 3 in a rows in minimax heuristic
 // [0][x] = left row, [1][x] = left col, [2][x] = middle row, [3][x] = middle col, ...
@@ -74,7 +74,7 @@ void senseComputerPiece()
 		// if computer piece is sensed
 		if (getColorReflected(S3) >= colorMin)
 		{
-			delay(300);
+			delay(1000);
 			moveToLocation(110, 0);
 			// pick up the chip
 			rotateArm();
@@ -254,7 +254,7 @@ int checkWinnerMinimax()
 void findPlayerPiece()
 {
 	// loop through each bottom empty piece (possible locations of user move)
-	for (int column = 6; column >= 0; column--)
+	for (int column = 0; column <= 6; column++)
 	{
 		for (int row = 5; row >= 0; row--)
 		{
@@ -266,6 +266,7 @@ void findPlayerPiece()
 				if (getColorReflected(S3) >= colorMin)
 				{
 					board[row][column] = 1;
+					return;
 				}
 				else
 				{
@@ -597,24 +598,6 @@ int singleOpen(int index, int who)
 	return key;
 }
 
-
-int doubleImmediatelyPlayable(int i, int j, int who)
-{
-	int type1 = singleImmediatelyPlayable(i, who);
-	int type2 = singleImmediatelyPlayable(j, who);
-	// check left
-	if ((type1 == 1 || type1 == 3) && (type2 == 1 || type2 == 3))
-	{
-		return true;
-	}
-	// check right
-	if ((type1 == 2 || type2 == 3) && (type2 == 2 || type2 == 3))
-	{
-		return true;
-	}
-	return false;
-}
-
 int doubleOpen(int i, int j, int who)
 {
 	int type1 = singleOpen(i, who);
@@ -794,6 +777,7 @@ int minimaxHeuristic()
 			}
 		}
 	}
+	// THIS PART NEEDS TO BE DUPLICATED FOR ROBOT WITH FLIPPED SIGN SCORE VALUES
 	// determine type of intersection (if any) and assign score
 	// loop through all combinations of pairs of 3s
 	for (int i = 0; i < numPlayerThrees; i++)
@@ -812,7 +796,7 @@ int minimaxHeuristic()
 						if (doubleOpen(i, j, 1))
 						{
 							score += 1000;
-							if (doubleImmediatelyPlayable(i, j, 1))
+							if (singleImmediatelyPlayable(i, 1) > 0 || singleImmediatelyPlayable(j, 1) > 0)
 							{
 								score += 1000;
 								// mark those as visited
@@ -827,11 +811,39 @@ int minimaxHeuristic()
 					}
 				}
 			}
-			//
+			else
+			{
+				// two 3 in a rows that is a guaranteed win
+				// check if endpoints one immediately above the other
+
+			}
+			// two 3 in a rows that isn't a guaranteed win
 
 		}
 	}
-
+	// check remaining single 3 in a rows
+	for (int i = 0; i < numPlayerThrees; i++)
+	{
+		if (singleOpen(i, 1) == 3 && singleImmediatelyPlayable(i, 1) == 3)
+		{
+			score -= 1000;
+		}
+		else if (!minimaxVisited[playerThrees[0][i]][playerThrees[1][i]] && singleOpen(i, 1) > 0)
+		{
+			score -= 100;
+		}
+	}
+	for (int i = 0; i < numRobotThrees; i++)
+	{
+		if (singleOpen(i, 2) == 3 && singleImmediatelyPlayable(i, 2) == 3)
+		{
+			score += 1000;
+		}
+		else if (!minimaxVisited[robotThrees[0][i]][robotThrees[1][i]] && singleOpen(i, 2) > 0)
+		{
+			score += 100;
+		}
+	}
 	// 2 in a rows
 	for (int row = 0; row <= 5; row++)
 	{
@@ -880,8 +892,8 @@ int minimaxHeuristic()
 	{
 		for (int col = 0; col <= 5; col++)
 		{
-			int a= row-1;
-			int b=col+1;
+			int a = row-1;
+			int b = col+1;
 			// player bottom left to top right diagonal
 			if (boardMinimax[row][col] == 1 && boardMinimax[a][b] == 1 && !minimaxVisited[row][col] && !minimaxVisited[a][b])
 			{
@@ -1024,16 +1036,23 @@ int minimax(int depth, bool robotTurn)
 
 void computerMove()
 {
-	int column = minimax(4, true);
+	// int column = minimax(4, true);
+	int column = 4;
 	moveToLocation(armHorizontal[column], armVertical[column]);
 	rotateArm();
 	numRobotMoves++;
+	for (int row = 5; row >= 0; row--)
+	{
+		if (board[row][column] == 0)
+		{
+			board[row][column] = 2;
+			break;
+		}
+	}
 }
 
 task main()
 {
-	// sync the two drive train motors because the robot only needs to move straight
-	//setMotorSync(leftMotor, rightMotor, 0, 80);
 	// let the user know it's their turn
 	nextTurnSound();
 	while (true)
@@ -1058,7 +1077,14 @@ task main()
 		computerMove();
 		// return home
 		moveToLocation(0, 0);
+		winner = checkWinner();
+		if (winner != 0)
+		{
+			playEndSound(winner);
+			break;
+		}
 		// let the user know it's their turn
 		nextTurnSound();
 	}
+	moveToLocation(0,0);
 }
