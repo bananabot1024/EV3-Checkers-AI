@@ -1393,7 +1393,10 @@ int minimax(int depth, bool robotTurn)
 				{
 					bestValue = currentValue;
 					// save the column number so it can be returned later
-					maxCol = col;
+					if (depth == 2)
+					{
+						maxCol = col;
+					}
 				}
 				// reset boardMinimax
 				boardMinimax[row][col] = 0;
