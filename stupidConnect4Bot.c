@@ -1462,7 +1462,7 @@ void computerMove()
 		}
 	}
 	else {
-		column= minimax(2, true);
+		column= 0;
 	}
 	moveToLocation(armHorizontal[column], armVertical[column]);
 	rotateArm();
